@@ -20,7 +20,7 @@ module "mod_azregions" {
 #----------------------------------------------------------
 data "azurerm_resource_group" "rgrp" {
   count = var.create_storage_account_resource_group == false ? 1 : 0
-  name  = var.custom_resource_group_name
+  name  = var.resource_group_name
 }
 
 module "mod_storage_rg" {
@@ -34,10 +34,10 @@ module "mod_storage_rg" {
   org_name                = var.org_name
   environment             = var.deploy_environment
   workload_name           = var.workload_name
-  custom_rg_name          = var.custom_resource_group_name != null ? var.custom_resource_group_name : null
+  custom_rg_name          = var.resource_group_name != null ? var.resource_group_name : null
 
   // Tags
-  add_tags = merge(var.tags, {
+  add_tags = merge(var.add_tags, {
     DeployedBy = format("AzureNoOpsTF [%s]", terraform.workspace)
   }) # Tags to be applied to all resources
 }
