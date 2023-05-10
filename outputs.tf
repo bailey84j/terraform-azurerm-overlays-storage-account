@@ -21,9 +21,19 @@ output "storage_account_uri" {
   value       = azurerm_storage_account.storage.primary_blob_endpoint
 }
 
+output "primary_access_key" {
+    description = "Specifies the primary access key of the storage account"
+    value       = azurerm_storage_account.storage.primary_access_key
+}
+
 output "storage_account_identity" {
   description = "Created Storage Account identity block"
-  value       = azurerm_storage_account.storage.identity
+  value       = azurerm_storage_account.storage.identity[0]
+}
+
+output "storage_account_principal_id" {
+  description = "Created Storage Account principal id"
+  value       = azurerm_storage_account.storage.identity[0].principal_id
 }
 
 output "storage_account_network_rules" {
@@ -34,6 +44,11 @@ output "storage_account_network_rules" {
 output "storage_blob_containers" {
   description = "Created blob containers in the Storage Account"
   value       = azurerm_storage_container.container
+}
+
+output "primary_blob_endpoint" {
+    description = "Specifies the primary blob endpoint of the storage account"
+    value       = azurerm_storage_account.storage.primary_blob_endpoint
 }
 
 output "storage_file_shares" {

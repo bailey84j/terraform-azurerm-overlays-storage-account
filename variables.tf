@@ -30,11 +30,6 @@ variable "org_name" {
   type        = string
 }
 
-variable "virtual_network_name" {
-  description = "The name of the virtual network"
-  default     = ""
-}
-
 variable "resource_group_name" {
   description = "Name of the workload ressource group"
   type        = string
