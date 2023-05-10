@@ -31,7 +31,7 @@ variable "org_name" {
 }
 
 variable "resource_group_name" {
-  description = "Name of the workload ressource group"
+  description = "Name of the workload resource group"
   type        = string
 }
 
