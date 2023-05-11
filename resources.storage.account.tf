@@ -15,8 +15,8 @@ resource "azurerm_advanced_threat_protection" "example" {
 #------------------------------------------------------------
 resource "azurerm_storage_account" "storage" {
   name                = local.sa_name
-  resource_group_name = var.resource_group_name
-  location            = var.location
+  resource_group_name = local.resource_group_name
+  location            = local.location
 
   access_tier              = var.access_tier
   account_tier             = var.account_tier
