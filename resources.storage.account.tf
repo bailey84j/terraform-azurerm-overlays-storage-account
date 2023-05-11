@@ -18,7 +18,7 @@ resource "azurerm_storage_account" "storage" {
   resource_group_name = local.resource_group_name
   location            = local.location
 
-  access_tier              = var.access_tier
+  access_tier              = var.account_kind == "BlockBlobStorage" && var.account_tier == "Premium" ? null : var.access_tier
   account_tier             = var.account_tier
   account_kind             = var.account_kind
   account_replication_type = var.account_replication_type
@@ -26,10 +26,12 @@ resource "azurerm_storage_account" "storage" {
   min_tls_version                 = var.min_tls_version
   allow_nested_items_to_be_public = var.public_nested_items_allowed
   shared_access_key_enabled       = var.shared_access_key_enabled
-  nfsv3_enabled                   = var.nfsv3_enabled
-  enable_https_traffic_only       = var.nfsv3_enabled ? false : var.https_traffic_only_enabled
-  is_hns_enabled                  = var.nfsv3_enabled ? true : var.hns_enabled
-  large_file_share_enabled        = var.account_kind != "BlockBlobStorage"
+  large_file_share_enabled        = var.account_kind != "BlockBlobStorage" && contains(["LRS", "ZRS"], var.account_replication_type)
+
+  sftp_enabled              = var.sftp_enabled
+  nfsv3_enabled             = var.nfsv3_enabled
+  is_hns_enabled            = var.nfsv3_enabled || var.sftp_enabled ? true : var.hns_enabled
+  enable_https_traffic_only = var.nfsv3_enabled ? false : var.https_traffic_only_enabled
 
   dynamic "identity" {
     for_each = var.identity_type == null ? [] : ["enabled"]
