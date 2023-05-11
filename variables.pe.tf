@@ -20,13 +20,13 @@ variable "private_subnet_address_prefix" {
   default     = null
 }
 
-variable "existing_vnet_id" {
-  description = "ID of the existing virtual network for the private endpoint"
+variable "virtual_network_name" {
+  description = "The name of the virtual network for private endpoints"
   default     = null
 }
 
 variable "existing_subnet_id" {
-  description = "The resource id of existing subnet"
+  description = "The Resource ID of the existing subnet for private endpoints"
   default     = null
 }
 

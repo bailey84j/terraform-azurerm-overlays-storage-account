@@ -26,9 +26,3 @@ variable "storage_account_custom_name" {
   type        = string
   default     = ""
 }
-variable "use_location_short_name" { 
-  description = "Use the short name of the location for the storage account name"
-  type        = bool
-  default     = true
-  
-}

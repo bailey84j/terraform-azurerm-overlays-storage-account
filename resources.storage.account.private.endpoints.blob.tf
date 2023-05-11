@@ -5,13 +5,13 @@
 # Private Link for Storage Account Blob - Default is "false" 
 #---------------------------------------------------------
 data "azurerm_virtual_network" "blob_vnet" {
-  count               = var.enable_blob_private_endpoint ? 1 : 0
+  count               = var.enable_blob_private_endpoint && var.virtual_network_name != null ? 1 : 0
   name                = var.virtual_network_name
   resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_private_endpoint" "blob_pep" {
-  count               = var.enable_blob_private_endpoint ? 1 : 0
+  count               = var.enable_blob_private_endpoint && var.existing_subnet_id != null ? 1 : 0
   name                = format("%s-private-endpoint", element([for n in azurerm_storage_account.storage : n.name], 0))
   location            = var.location
   resource_group_name = var.resource_group_name

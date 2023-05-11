@@ -30,20 +30,31 @@ variable "org_name" {
   type        = string
 }
 
-variable "resource_group_name" {
-  description = "Name of the workload resource group"
+#######################
+# RG Configuration   ##
+#######################
+
+variable "create_resource_group" {
+  description = "Controls if the resource group should be created. If set to false, the resource group name must be provided. Default is false."
+  type        = bool
+  default     = false
+}
+
+variable "use_location_short_name" {
+  description = "Use short location name for resources naming (ie eastus -> eus). Default is true. If set to false, the full cli location name will be used. if custom naming is set, this variable will be ignored."
+  type        = bool
+  default     = true
+}
+
+variable "existing_resource_group_name" {
+  description = "The name of the existing resource group to use. If not set, the name will be generated using the `org_name`, `workload_name`, `deploy_environment` and `environment` variables."
   type        = string
+  default     = null
 }
 
 #####################################
 # Storage Account Configuration   ##
 #####################################
-
-variable "create_storage_account_resource_group" {
-  description = "Should the storage account be created in a separate resource group? "
-  type        = bool
-  default     = false
-}
 
 variable "enable_advanced_threat_protection" {
   description = "Threat detection policy configuration, known in the API as Server Security Alerts Policy. Currently available only for the SQL API."
