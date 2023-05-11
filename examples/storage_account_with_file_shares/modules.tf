@@ -10,7 +10,7 @@ module "rg" {
 
 module "storage_account" {
   source  = "azurenoops/overlays-storage-account/azurerm"
-  version = "~> 1.0.0"
+  version = "~> 0.1.0"
 
   //Global Settings
   resource_group_name = module.rg.resource_group_name
