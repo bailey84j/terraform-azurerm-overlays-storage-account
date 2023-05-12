@@ -1,11 +1,19 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-#------------------------------------------------------------
-# Local configuration - Default (required). 
-#------------------------------------------------------------
 #---------------------------------
 # Local declarations
+#---------------------------------
+# The following block of locals are used to avoid using
+# empty object types in the code
+locals {
+  empty_list   = []
+  empty_map    = tomap({})
+  empty_string = ""
+}
+
+#---------------------------------
+# Random ID
 #---------------------------------
 resource "random_id" "uniqueString" {
   keepers = {
@@ -13,7 +21,7 @@ resource "random_id" "uniqueString" {
     org_prefix = var.org_name
     subid      = var.workload_name
   }
-  byte_length = 3
+  byte_length = 5
 }
 
 locals {
