@@ -13,6 +13,6 @@ resource "azurerm_subscription_template_deployment" "telemetry_core" {
   count            = local.telem_workload_deployment_enabled ? 1 : 0
   provider         = azurerm
   name             = local.telem_workload_arm_deployment_name
-  location         = module.mod_azure_region_lookup.location_cli
+  location         = module.mod_azregions.location_cli
   template_content = local.telem_arm_subscription_template_content
 }
