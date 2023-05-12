@@ -1,10 +1,10 @@
-data "azurenoopsutils_resource_name" "sa" {
-  name          = var.workload_name
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+data "azurenoopsutils_resource_name" "st" {
+  name          = random_id.uniqueString.hex
   resource_type = "azurerm_storage_account"
-  prefixes      = [var.org_name, module.mod_azregions.location_short]
-  suffixes      = compact([var.name_prefix == "" ? null : local.name_prefix, var.environment, local.name_suffix, var.use_naming ? "" : "sa"])
+  prefixes      = [var.org_name, var.use_location_short_name ? module.mod_azregions.location_short : module.mod_azregions.location_cli]
+  suffixes      = compact([var.name_prefix == "" ? null : local.name_prefix, var.deploy_environment, var.workload_name, var.use_naming ? "" : "st"])
   use_slug      = var.use_naming
-  random_seed   = 8
-  clean_input   = true
-  separator     = "-"
 }
