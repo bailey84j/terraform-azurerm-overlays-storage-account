@@ -30,6 +30,12 @@ variable "org_name" {
   type        = string
 }
 
+variable "disable_telemetry" {
+  description = "If set to true, will disable the telemetry sent as part of the module."
+  type        = string
+  default     = false
+}
+
 #######################
 # RG Configuration   ##
 #######################
@@ -177,13 +183,7 @@ variable "storage_blob_data_protection" {
     container_delete_retention_policy_in_days = optional(number, 0)
     container_point_in_time_restore           = optional(bool, false)
   })
-  default = {
-    change_feed_enabled                       = true
-    versioning_enabled                        = true
-    delete_retention_policy_in_days           = 30
-    container_delete_retention_policy_in_days = 30
-    container_point_in_time_restore           = true
-  }
+  default = {}
 }
 
 variable "storage_blob_cors_rule" {

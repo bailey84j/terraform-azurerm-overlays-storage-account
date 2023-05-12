@@ -26,6 +26,9 @@ resource "azurerm_storage_account" "storage" {
   min_tls_version                 = var.min_tls_version
   allow_nested_items_to_be_public = var.public_nested_items_allowed
   shared_access_key_enabled       = var.shared_access_key_enabled
+  # Large File Share is only available for Standard and Premium accounts
+  # Large File Share is only available for LRS and ZRS replication types.
+  # Large File Share is not available for BlockBlobStorage accounts.
   large_file_share_enabled        = var.account_kind != "BlockBlobStorage" && contains(["LRS", "ZRS"], var.account_replication_type)
 
   sftp_enabled              = var.sftp_enabled
@@ -167,6 +170,7 @@ resource "azurerm_storage_account" "storage" {
     }
   }
 
+  # Bug when nfsv3 is activated. The external resource azurerm_storage_account_network_rules is not taken into account
   dynamic "network_rules" {
     for_each = var.nfsv3_enabled ? ["enabled"] : []
     content {
@@ -174,6 +178,13 @@ resource "azurerm_storage_account" "storage" {
       bypass                     = var.network_bypass
       ip_rules                   = local.storage_ip_rules
       virtual_network_subnet_ids = var.subnet_ids
+      dynamic "private_link_access" {
+        for_each = var.private_link_access
+        content {
+          endpoint_resource_id = private_link_access.value.endpoint_resource_id
+          endpoint_tenant_id   = private_link_access.value.endpoint_tenant_id
+        }
+      }
     }
   }
 
