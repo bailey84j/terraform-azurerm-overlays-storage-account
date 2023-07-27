@@ -13,7 +13,7 @@ data "azurerm_virtual_network" "table_vnet" {
 data "azurerm_subnet" "table_snet" {
   count                = var.enable_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
   name                 = var.existing_private_subnet_name
-  virtual_network_name = azurerm_virtual_network.vnet.0.name
+  virtual_network_name = azurerm_virtual_network.table_vnet.0.name
   resource_group_name  = local.resource_group_name
 }
 
