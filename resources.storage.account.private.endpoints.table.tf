@@ -35,7 +35,7 @@ data "azurerm_private_endpoint_connection" "table_pip" {
 
 resource "azurerm_private_dns_zone" "table_dns_zone" {
   count               = var.existing_private_dns_zone == null && var.enable_table_private_endpoint ? 1 : 0
-  name                = var.environment == "public" ? "privatelink.${azurerm_storage_table.table.name}.table.core.windows.net" : "privatelink.${azurerm_storage_table.table.name}.table.core.usgovcloudapi.net"
+  name                = var.environment == "public" ? "privatelink.table.core.windows.net" : "privatelink.table.core.usgovcloudapi.net"
   resource_group_name = local.resource_group_name
   tags                = merge({ "ResourceName" = format("%s", "StorageAccount-Table-Private-DNS-Zone") }, var.add_tags, )
 }
