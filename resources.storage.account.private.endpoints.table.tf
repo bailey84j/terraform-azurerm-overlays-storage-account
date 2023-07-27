@@ -12,16 +12,16 @@ data "azurerm_virtual_network" "table_vnet" {
 
 resource "azurerm_private_endpoint" "table_pep" {
   count               = var.enable_table_private_endpoint && var.existing_subnet_id != null ? 1 : 0
-  name                = format("%s-private-endpoint", element([for n in azurerm_storage_table.table : n.name], 0))
+  name                = format("%s-private-endpoint", azurerm_storage_table.table.name)
   location            = local.location
   resource_group_name = local.resource_group_name
   subnet_id           = var.existing_subnet_id
-  tags                = merge({ "ResourceName" = format("%s-private-endpoint", element([for n in azurerm_storage_table.table : n.name], 0)) }, var.add_tags, )
+  tags                = merge({ "ResourceName" = format("%s-private-endpoint", azurerm_storage_table.table.name) }, var.add_tags, )
 
   private_service_connection {
     name                           = "storageaccount-table-privatelink"
     is_manual_connection           = false
-    private_connection_resource_id = element([for i in azurerm_storage_table.table : i.id], 0)
+    private_connection_resource_id = azurerm_storage_table.table.id
     subresource_names              = ["table"]
   }
 }
@@ -35,7 +35,7 @@ data "azurerm_private_endpoint_connection" "table_pip" {
 
 resource "azurerm_private_dns_zone" "table_dns_zone" {
   count               = var.existing_private_dns_zone == null && var.enable_table_private_endpoint ? 1 : 0
-  name                = var.environment == "public" ? "privatelink.table.core.windows.net" : "privatelink.table.core.usgovcloudapi.net"
+  name                = var.environment == "public" ? "privatelink.${azurerm_storage_table.table.name}.table.core.windows.net" : "privatelink.${azurerm_storage_table.table.name}.table.core.usgovcloudapi.net"
   resource_group_name = local.resource_group_name
   tags                = merge({ "ResourceName" = format("%s", "StorageAccount-Table-Private-DNS-Zone") }, var.add_tags, )
 }
@@ -51,7 +51,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "table_vnet_link" {
 
 resource "azurerm_private_dns_a_record" "table_a_record" {
   count               = var.enable_table_private_endpoint ? 1 : 0
-  name                = element([for n in azurerm_storage_table.table : n.name], 0)
+  name                = azurerm_storage_table.table.name
   zone_name           = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.table_dns_zone.0.name : var.existing_private_dns_zone
   resource_group_name = local.resource_group_name
   ttl                 = 300

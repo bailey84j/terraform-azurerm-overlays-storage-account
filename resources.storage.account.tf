@@ -4,9 +4,9 @@
 #-------------------------------------------------------------
 #  Storage Account Advanced Threat Protection configuration - Default is "false" 
 #-------------------------------------------------------------
-resource "azurerm_advanced_threat_protection" "example" {
+resource "azurerm_advanced_threat_protection" "atp" {
   count              = var.enable_advanced_threat_protection ? 1 : 0
-  target_resource_id = element([for n in azurerm_storage_account.storage : n.id], 0)
+  target_resource_id = azurerm_storage_account.storage.id
   enabled            = var.enable_advanced_threat_protection
 }
 
@@ -19,9 +19,9 @@ resource "azurerm_storage_account" "storage" {
   location            = local.location
 
   access_tier              = var.account_kind == "BlockBlobStorage" && var.account_tier == "Premium" ? null : var.access_tier
-  account_tier             = var.account_tier
+  account_tier             = local.account_tier
+  account_replication_type = local.account_replication_type
   account_kind             = var.account_kind
-  account_replication_type = var.account_replication_type
 
   min_tls_version                 = var.min_tls_version
   allow_nested_items_to_be_public = var.public_nested_items_allowed
@@ -29,7 +29,7 @@ resource "azurerm_storage_account" "storage" {
   # Large File Share is only available for Standard and Premium accounts
   # Large File Share is only available for LRS and ZRS replication types.
   # Large File Share is not available for BlockBlobStorage accounts.
-  large_file_share_enabled        = var.account_kind != "BlockBlobStorage" && contains(["LRS", "ZRS"], var.account_replication_type)
+  large_file_share_enabled = var.account_kind != "BlockBlobStorage" && contains(["LRS", "ZRS"], var.account_replication_type)
 
   sftp_enabled              = var.sftp_enabled
   nfsv3_enabled             = var.nfsv3_enabled
@@ -170,23 +170,5 @@ resource "azurerm_storage_account" "storage" {
     }
   }
 
-  # Bug when nfsv3 is activated. The external resource azurerm_storage_account_network_rules is not taken into account
-  dynamic "network_rules" {
-    for_each = var.nfsv3_enabled ? ["enabled"] : []
-    content {
-      default_action             = "Deny"
-      bypass                     = var.network_bypass
-      ip_rules                   = local.storage_ip_rules
-      virtual_network_subnet_ids = var.subnet_ids
-      dynamic "private_link_access" {
-        for_each = var.private_link_access
-        content {
-          endpoint_resource_id = private_link_access.value.endpoint_resource_id
-          endpoint_tenant_id   = private_link_access.value.endpoint_tenant_id
-        }
-      }
-    }
-  }
-
-  tags = merge(local.default_tags, var.add_tags)
+  tags = merge({ "ResourceName" = format("%s", lower(replace(var.storage_account_name, "/[[:^alnum:]]/", "")), 0, 24) }, local.default_tags, var.add_tags)
 }

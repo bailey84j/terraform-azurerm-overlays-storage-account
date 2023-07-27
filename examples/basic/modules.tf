@@ -6,7 +6,7 @@ module "storage_account" {
 
   //Global Settings
   # Resource Group, location, VNet and Subnet details
-  existing_resource_group_name = azurerm_resource_group.linux-rg.name
+  existing_resource_group_name = azurerm_resource_group.storage-rg.name
   location                     = var.location
   deploy_environment           = var.deploy_environment
   org_name                     = var.org_name
@@ -19,6 +19,11 @@ module "storage_account" {
   # Possible types are `SystemAssigned`, `UserAssigned` and `SystemAssigned, UserAssigned`.
   identity_type = "SystemAssigned"
   //identity_ids  = [for k in azurerm_user_assigned_identity.example : k.id]
+
+  # Enable private endpoint for storage account (Optional)
+  enable_blob_private_endpoint  = true
+  enable_table_private_endpoint = false
+  existing_subnet_id            = azurerm_subnet.storage-snet.id
 
   # Locks
   enable_resource_locks = false

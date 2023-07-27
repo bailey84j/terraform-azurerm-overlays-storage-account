@@ -67,6 +67,12 @@ variable "enable_advanced_threat_protection" {
   default     = false
 }
 
+variable "sku_name" {
+  description = "The SKUs supported by Microsoft Azure Storage. Valid options are Premium_LRS, Premium_ZRS, Standard_GRS, Standard_GZRS, Standard_LRS, Standard_RAGRS, Standard_RAGZRS, Standard_ZRS"
+  default     = "Standard_RAGRS"
+  type        = string
+}
+
 variable "account_kind" {
   description = "Defines the Kind of account. Valid options are `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` and `StorageV2`. Changing this forces a new resource to be created. Defaults to StorageV2."
   type        = string
