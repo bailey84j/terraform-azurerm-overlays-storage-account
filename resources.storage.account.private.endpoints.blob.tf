@@ -11,7 +11,7 @@ data "azurerm_virtual_network" "blob_vnet" {
 }
 
 data "azurerm_subnet" "blob_snet" {
-  count                = var.enable_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
+  count                = var.enable_blob_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
   name                 = var.existing_private_subnet_name
   virtual_network_name = data.azurerm_virtual_network.blob_vnet.0.name
   resource_group_name  = local.resource_group_name
