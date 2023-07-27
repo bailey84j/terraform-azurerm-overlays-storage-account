@@ -10,12 +10,19 @@ data "azurerm_virtual_network" "table_vnet" {
   resource_group_name = local.resource_group_name
 }
 
+data "azurerm_subnet" "snet" {
+  count                = var.enable_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
+  name                 = var.existing_private_subnet_name
+  virtual_network_name = azurerm_virtual_network.vnet.0.name
+  resource_group_name  = local.resource_group_name
+}
+
 resource "azurerm_private_endpoint" "table_pep" {
-  count               = var.enable_table_private_endpoint && var.existing_subnet_id != null ? 1 : 0
+  count               = var.enable_table_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
   name                = format("%s-private-endpoint", azurerm_storage_table.table.name)
   location            = local.location
   resource_group_name = local.resource_group_name
-  subnet_id           = var.existing_subnet_id
+  subnet_id           = azurerm_subnet.snet.0.id
   tags                = merge({ "ResourceName" = format("%s-private-endpoint", azurerm_storage_table.table.name) }, var.add_tags, )
 
   private_service_connection {

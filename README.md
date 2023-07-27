@@ -2,7 +2,7 @@
 
 [![Changelog](https://img.shields.io/badge/changelog-release-green.svg)](CHANGELOG.md) [![Notice](https://img.shields.io/badge/notice-copyright-yellow.svg)](NOTICE) [![MIT License](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE) [![TF Registry](https://img.shields.io/badge/terraform-registry-blue.svg)](https://registry.terraform.io/modules/azurenoops/overlays-storage-account/azurerm/)
 
-This Overlay terraform module can create a Storage Account with a set of containers (and access level), set of file shares (and quota), tables, queues, Network policies and Blob lifecycle management and manage related parameters (Threat protection, Network Rules, Private Endpoints, etc.) to be used in a [SCCA compliant Network](https://registry.terraform.io/modules/azurenoops/overlays-hubspoke/azurerm/latest).
+This Overlay terraform module can create a Storage Account with a set of containers (and access level), set of file shares (and quota), tables, queues, Network policies and Blob lifecycle management and manage related parameters (Threat protection, Network Rules, Private Endpoints, etc.) to be used in a [SCCA compliant Network](https://registry.terraform.io/modules/azurenoops/overlays-management-hub/azurerm/latest).
 
 To defines the kind of account, set the argument to account_kind = "StorageV2". Account kind defaults to StorageV2. If you want to change this value to other storage accounts kind, then this module automatically computes the appropriate values for account_tier, account_replication_type. The valid options are BlobStorage, BlockBlobStorage, FileStorage, Storage and StorageV2. static_website can only be set when the account_kind is set to StorageV2.
 
