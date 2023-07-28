@@ -1,4 +1,3 @@
-
 output "id" {
   value = module.storage_account.storage_account_id
 }

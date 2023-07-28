@@ -49,11 +49,11 @@ resource "azurerm_private_dns_zone" "blob_dns_zone" {
 
 resource "azurerm_private_dns_zone_virtual_network_link" "blob_vnet_link" {
   count                 = var.existing_private_dns_zone == null && var.enable_blob_private_endpoint ? 1 : 0
-  name                  = "blob_vnet-private-zone-link"
+  name                  = "blob-private-zone-link"
   resource_group_name   = local.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.blob_dns_zone.0.name
   virtual_network_id    = data.azurerm_virtual_network.blob_vnet.0.id
-  tags                  = merge({ "ResourceName" = format("%s", "blob_vnet-private-zone-link") }, var.add_tags, )
+  tags                  = merge({ "ResourceName" = format("%s", "blob-private-zone-link") }, var.add_tags, )
 }
 
 resource "azurerm_private_dns_a_record" "blob_a_record" {
