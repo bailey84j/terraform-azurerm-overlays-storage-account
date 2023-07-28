@@ -69,7 +69,7 @@ variable "enable_advanced_threat_protection" {
 
 variable "sku_name" {
   description = "The SKUs supported by Microsoft Azure Storage. Valid options are Premium_LRS, Premium_ZRS, Standard_GRS, Standard_GZRS, Standard_LRS, Standard_RAGRS, Standard_RAGZRS, Standard_ZRS"
-  default     = "Standard_RAGRS"
+  default     = "Standard_GRS"
   type        = string
 }
 
@@ -94,7 +94,7 @@ variable "access_tier" {
 variable "account_replication_type" {
   description = "Defines the type of replication to use for this Storage Account. Valid options are `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` and `RAGZRS`."
   type        = string
-  default     = "ZRS"
+  default     = "RAGRS"
 }
 
 variable "https_traffic_only_enabled" {
