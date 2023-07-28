@@ -25,9 +25,8 @@ resource "random_id" "uniqueString" {
 }
 
 locals {
-  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_network_rules#ip_rules
-  # > Small address ranges using "/31" or "/32" prefix sizes are not supported. These ranges should be configured using individual IP address rules without prefix specified.
-  storage_ip_rules = toset(flatten([for cidr in var.allowed_cidrs : (length(regexall("/3.", cidr)) > 0 ? [cidrhost(cidr, 0), cidrhost(cidr, -1)] : [cidr])]))
+  account_tier             = (var.account_kind == "FileStorage" ? "Premium" : split("_", var.sku_name)[0])
+  account_replication_type = (local.account_tier == "Premium" ? "LRS" : split("_", var.sku_name)[1])
 
   pitr_enabled = (
     alltrue([var.storage_blob_data_protection.change_feed_enabled, var.storage_blob_data_protection.versioning_enabled, var.storage_blob_data_protection.container_point_in_time_restore])
@@ -46,7 +45,7 @@ locals {
   disable_telemetry = var.disable_telemetry
 
   # PUID identifies the module
-  telem_workload_puid = "434fc92b-dbc0-4770-8642-f611851881bd5"
+  telem_workload_puid = "434fc92b-dbc0-4770-8642-f611851881bd"
 }
 
 # The following `can()` is used for when disable_telemetry = true

@@ -10,18 +10,25 @@ data "azurerm_virtual_network" "table_vnet" {
   resource_group_name = local.resource_group_name
 }
 
+data "azurerm_subnet" "table_snet" {
+  count                = var.enable_table_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
+  name                 = var.existing_private_subnet_name
+  virtual_network_name = data.azurerm_virtual_network.table_vnet.0.name
+  resource_group_name  = local.resource_group_name
+}
+
 resource "azurerm_private_endpoint" "table_pep" {
-  count               = var.enable_table_private_endpoint && var.existing_subnet_id != null ? 1 : 0
-  name                = format("%s-private-endpoint", element([for n in azurerm_storage_table.table : n.name], 0))
+  count               = var.enable_table_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
+  name                = format("%s-private-endpoint", azurerm_storage_table.table.0.name)
   location            = local.location
   resource_group_name = local.resource_group_name
-  subnet_id           = var.existing_subnet_id
-  tags                = merge({ "ResourceName" = format("%s-private-endpoint", element([for n in azurerm_storage_table.table : n.name], 0)) }, var.add_tags, )
+  subnet_id           = data.azurerm_subnet.table_snet.0.id
+  tags                = merge({ "ResourceName" = format("%s-private-endpoint", azurerm_storage_table.table.0.name) }, var.add_tags, )
 
   private_service_connection {
     name                           = "storageaccount-table-privatelink"
     is_manual_connection           = false
-    private_connection_resource_id = element([for i in azurerm_storage_table.table : i.id], 0)
+    private_connection_resource_id = azurerm_storage_table.table.0.id
     subresource_names              = ["table"]
   }
 }
@@ -51,7 +58,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "table_vnet_link" {
 
 resource "azurerm_private_dns_a_record" "table_a_record" {
   count               = var.enable_table_private_endpoint ? 1 : 0
-  name                = element([for n in azurerm_storage_table.table : n.name], 0)
+  name                = azurerm_storage_table.table.0.name
   zone_name           = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.table_dns_zone.0.name : var.existing_private_dns_zone
   resource_group_name = local.resource_group_name
   ttl                 = 300

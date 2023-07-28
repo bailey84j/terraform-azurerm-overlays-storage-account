@@ -10,18 +10,25 @@ data "azurerm_virtual_network" "blob_vnet" {
   resource_group_name = local.resource_group_name
 }
 
+data "azurerm_subnet" "blob_snet" {
+  count                = var.enable_blob_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
+  name                 = var.existing_private_subnet_name
+  virtual_network_name = data.azurerm_virtual_network.blob_vnet.0.name
+  resource_group_name  = local.resource_group_name
+}
+
 resource "azurerm_private_endpoint" "blob_pep" {
-  count               = var.enable_blob_private_endpoint && var.existing_subnet_id != null ? 1 : 0
-  name                = format("%s-private-endpoint", element([for n in azurerm_storage_account.storage : n.name], 0))
+  count               = var.enable_blob_private_endpoint && var.existing_private_subnet_name != null ? 1 : 0
+  name                = format("%s-private-endpoint", azurerm_storage_account.storage.name)
   location            = local.location
   resource_group_name = local.resource_group_name
-  subnet_id           = var.existing_subnet_id
-  tags                = merge({ "ResourceName" = format("%s-private-endpoint", element([for n in azurerm_storage_account.storage : n.name], 0)) }, var.add_tags, )
+  subnet_id           = data.azurerm_subnet.blob_snet.0.id
+  tags                = merge({ "ResourceName" = format("%s-private-endpoint", azurerm_storage_account.storage.name) }, var.add_tags, )
 
   private_service_connection {
     name                           = "storageaccount-blob-privatelink"
     is_manual_connection           = false
-    private_connection_resource_id = element([for i in azurerm_storage_account.storage : i.id], 0)
+    private_connection_resource_id = azurerm_storage_account.storage.id
     subresource_names              = ["blob"]
   }
 }
@@ -42,16 +49,16 @@ resource "azurerm_private_dns_zone" "blob_dns_zone" {
 
 resource "azurerm_private_dns_zone_virtual_network_link" "blob_vnet_link" {
   count                 = var.existing_private_dns_zone == null && var.enable_blob_private_endpoint ? 1 : 0
-  name                  = "blob_vnet-private-zone-link"
+  name                  = "blob-private-zone-link"
   resource_group_name   = local.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.blob_dns_zone.0.name
   virtual_network_id    = data.azurerm_virtual_network.blob_vnet.0.id
-  tags                  = merge({ "ResourceName" = format("%s", "blob_vnet-private-zone-link") }, var.add_tags, )
+  tags                  = merge({ "ResourceName" = format("%s", "blob-private-zone-link") }, var.add_tags, )
 }
 
 resource "azurerm_private_dns_a_record" "blob_a_record" {
   count               = var.enable_blob_private_endpoint ? 1 : 0
-  name                = element([for n in azurerm_storage_account.storage : n.name], 0)
+  name                = azurerm_storage_account.storage.name
   zone_name           = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.blob_dns_zone.0.name : var.existing_private_dns_zone
   resource_group_name = local.resource_group_name
   ttl                 = 300

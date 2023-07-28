@@ -40,7 +40,7 @@ variable "disable_telemetry" {
 # RG Configuration   ##
 #######################
 
-variable "create_resource_group" {
+variable "create_storage_resource_group" {
   description = "Controls if the resource group should be created. If set to false, the resource group name must be provided. Default is false."
   type        = bool
   default     = false
@@ -67,6 +67,12 @@ variable "enable_advanced_threat_protection" {
   default     = false
 }
 
+variable "sku_name" {
+  description = "The SKUs supported by Microsoft Azure Storage. Valid options are Premium_LRS, Premium_ZRS, Standard_GRS, Standard_GZRS, Standard_LRS, Standard_RAGRS, Standard_RAGZRS, Standard_ZRS"
+  default     = "Standard_GRS"
+  type        = string
+}
+
 variable "account_kind" {
   description = "Defines the Kind of account. Valid options are `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` and `StorageV2`. Changing this forces a new resource to be created. Defaults to StorageV2."
   type        = string
@@ -88,7 +94,7 @@ variable "access_tier" {
 variable "account_replication_type" {
   description = "Defines the type of replication to use for this Storage Account. Valid options are `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` and `RAGZRS`."
   type        = string
-  default     = "ZRS"
+  default     = "RAGRS"
 }
 
 variable "https_traffic_only_enabled" {

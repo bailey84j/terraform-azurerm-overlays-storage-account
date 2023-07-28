@@ -2,7 +2,9 @@
 
 [![Changelog](https://img.shields.io/badge/changelog-release-green.svg)](CHANGELOG.md) [![Notice](https://img.shields.io/badge/notice-copyright-yellow.svg)](NOTICE) [![MIT License](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE) [![TF Registry](https://img.shields.io/badge/terraform-registry-blue.svg)](https://registry.terraform.io/modules/azurenoops/overlays-storage-account/azurerm/)
 
-This Overlay terraform module can create a Storage Account and manage related parameters (Threat protection, Network Rules, Blob Containers, File Shares, Private Endpoints, etc.) to be used in a [SCCA compliant Network](https://registry.terraform.io/modules/azurenoops/overlays-hubspoke/azurerm/latest).
+This Overlay terraform module can create a Storage Account with a set of containers (and access level), set of file shares (and quota), tables, queues, Network policies and Blob lifecycle management and manage related parameters (Threat protection, Network Rules, Private Endpoints, etc.) to be used in a [SCCA compliant Network](https://registry.terraform.io/modules/azurenoops/overlays-management-hub/azurerm/latest).
+
+To defines the kind of account, set the argument to account_kind = "StorageV2". Account kind defaults to StorageV2. If you want to change this value to other storage accounts kind, then this module automatically computes the appropriate values for account_tier, account_replication_type. The valid options are BlobStorage, BlockBlobStorage, FileStorage, Storage and StorageV2. static_website can only be set when the account_kind is set to StorageV2.
 
 ## SCCA Compliance
 
@@ -10,9 +12,202 @@ This module can be SCCA compliant and can be used in a SCCA compliant Network. E
 
 For more information, please read the [SCCA documentation]().
 
+## Resources Supported
+
+* [Storage Account](https://www.terraform.io/docs/providers/azurerm/r/storage_account.html)
+* [Storage Advanced Threat Protection](https://www.terraform.io/docs/providers/azurerm/r/advanced_threat_protection.html)
+* [Containers](https://www.terraform.io/docs/providers/azurerm/r/storage_container.html)
+* [SMB File Shares](https://www.terraform.io/docs/providers/azurerm/r/storage_share.html)
+* [Storage Table](https://www.terraform.io/docs/providers/azurerm/r/storage_table.html)
+* [Storage Queue](https://www.terraform.io/docs/providers/azurerm/r/storage_queue.html)
+* [Network Policies](https://www.terraform.io/docs/providers/azurerm/r/storage_account.html#network_rules)
+* [Azure Blob storage lifecycle](https://www.terraform.io/docs/providers/azurerm/r/storage_management_policy.html)
+* [Managed Service Identity](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account#identity)
+
+## Module Usage
+
+```terraform
+# Azurerm provider configuration
+provider "azurerm" {
+  features {}
+}
+
+```
+
+## Resource Group
+
+By default, this module will not create a resource group and the name of an existing resource group to be given in an argument `existing_resource_group_name`. If you want to create a new resource group, set the argument `create_resource_group = true`.
+
+> [!NOTE]
+> *If you are using an existing resource group, then this module uses the same resource group location to create all resources in this module.*
+
 ## Azure File Share Authentication
 
 If you need to enable Active Directory or AAD DS authentication for Azure File on this Storage Account, please read the [Microsoft documentation](https://learn.microsoft.com/en-us/azure/storage/files/storage-files-identity-ad-ds-enable) and set the required values in the `file_share_authentication` variable.
+
+## BlockBlobStorage accounts
+
+A BlockBlobStorage account is a specialized storage account in the premium performance tier for storing unstructured object data as block blobs or append blobs. Compared with general-purpose v2 and BlobStorage accounts, BlockBlobStorage accounts provide low, consistent latency and higher transaction rates.
+
+BlockBlobStorage accounts don't currently support tiering to hot, cool, or archive access tiers. This type of storage account does not support page blobs, tables, or queues.
+
+To create BlockBlobStorage accounts, set the argument to `account_kind = "BlockBlobStorage"`.
+
+## FileStorage accounts
+
+A FileStorage account is a specialized storage account used to store and create premium file shares. This storage account kind supports files but not block blobs, append blobs, page blobs, tables, or queues.
+
+FileStorage accounts offer unique performance dedicated characteristics such as IOPS bursting. For more information on these characteristics, see the File share storage tiers section of the Files planning guide.
+
+To create BlockBlobStorage accounts, set the argument to `account_kind = "FileStorage"`.
+
+## Containers
+
+A container organizes a set of blobs, similar to a directory in a file system. A storage account can include an unlimited number of containers, and a container can store an unlimited number of blobs. The container name must be lowercase.
+
+This module creates the containers based on your input within an Azure Storage Account.  Configure the `access_type` for this Container as per your preference. Possible values are `blob`, `container` or `private`. Preferred Defaults to `private`.
+
+## SMB File Shares
+
+Azure Files offers fully managed file shares in the cloud that are accessible via the industry standard Server Message Block (SMB) protocol. Azure file shares can be mounted concurrently by cloud or on-premises deployments of Windows, Linux, and macOS.
+
+This module creates the SMB file shares based on your input within an Azure Storage Account.  Configure the `quota` for this file share as per your preference. The maximum size of the share, in gigabytes. For Standard storage accounts, this must be greater than `0` and less than `5120` GB (5 TB). For Premium FileStorage storage accounts, this must be greater than `100` GB and less than `102400` GB (100 TB).
+
+## Soft delete for Blobs or Containers
+
+Soft delete protects blob data from being accidentally or erroneously modified or deleted. When soft delete is enabled for a storage account, containers, blobs, blob versions, and snapshots in that storage account may be recovered after they are deleted, within a retention period that you specify.
+
+This module allows you to specify the number of days that the blob or container should be retained period using `blob_soft_delete_retention_days` and `container_soft_delete_retention_days` arguments between 1 and 365 days. Default is `7` days.
+
+> [!WARNING]
+> Container soft delete can restore only whole containers and their contents at the time of deletion. You cannot restore a deleted blob within a container by using container soft delete. Microsoft recommends also enabling blob soft delete and blob versioning to protect individual blobs in a container.
+>
+> When you restore a container, you must restore it to its original name. If the original name has been used to create a new container, then you will not be able to restore the soft-deleted container.
+
+## Configure Azure Storage firewalls and virtual networks
+
+The Azure storage firewall provides access control access for the public endpoints of the storage account.  Use network policies to block all access through the public endpoint when using private endpoints. The storage firewall configuration also enables select trusted Azure platform services to access the storage account securely.
+
+The default action set to `Allow` when no network rules matched. A `subnet_ids` or `ip_rules` can be added to `network_rules` block to allow a request that is not Azure Services.
+
+```hcl
+module "storage" {
+  source  = "azurenoops/overlays-storage-account/azurerm"
+  version = "x.x.x"
+
+  # .... omitted
+
+  # If specifying network_rules, one of either `ip_rules` or `subnet_ids` must be specified
+  network_rules = {
+    bypass     = ["AzureServices"]
+    # One or more IP Addresses, or CIDR Blocks to access this Key Vault.
+    ip_rules   = ["123.201.18.148"]
+    # One or more Subnet ID's to access this Key Vault.
+    subnet_ids = []
+  }
+
+  # .... omitted
+  }
+  ```
+
+## Manage the Azure Blob storage lifecycle
+
+Azure Blob storage lifecycle management offers a rich, rule-based policy for General Purpose v2 (GPv2) accounts, Blob storage accounts, and Premium Block Blob storage accounts. Use the policy to transition your data to the appropriate access tiers or expire at the end of the data's lifecycle.
+
+The lifecycle management policy lets you:
+
+* Transition blobs to a cooler storage tier (hot to cool, hot to archive, or cool to archive) to optimize for performance and cost
+* Delete blobs at the end of their lifecycles
+* Define rules to be run once per day at the storage account level
+* Apply rules to containers or a subset of blobs*
+
+This module supports the implementation of storage lifecycle management. If specifying network_rules, one of either `ip_rules` or `subnet_ids` must be specified and default_action must be set to `Deny`.
+
+```hcl
+module "storage" {
+  source  = "azurenoops/overlays-storage-account/azurerm"
+  version = "x.x.x"
+
+  # .... omitted
+
+  # Lifecycle management for storage account.
+  # Must specify the value to each argument and default is `0`
+  lifecycles = [
+    {
+      prefix_match               = ["mystore250/folder_path"]
+      tier_to_cool_after_days    = 0
+      tier_to_archive_after_days = 50
+      delete_after_days          = 100
+      snapshot_delete_after_days = 30
+    },
+    {
+      prefix_match               = ["blobstore251/another_path"]
+      tier_to_cool_after_days    = 0
+      tier_to_archive_after_days = 30
+      delete_after_days          = 75
+      snapshot_delete_after_days = 30
+    }
+  ]
+
+  # .... omitted
+  }
+  ```
+
+## `Identity` - Configure managed identities to access Azure Storage
+
+Managed identities for Azure resources provides Azure services with an automatically managed identity in Azure Active Directory. You can use this identity to authenticate to any service that supports Azure AD authentication, without having credentials in your code.
+
+There are two types of managed identities:
+
+* **System-assigned**: When enabled a system-assigned managed identity an identity is created in Azure AD that is tied to the lifecycle of that service instance. when the resource is deleted, Azure automatically deletes the identity. By design, only that Azure resource can use this identity to request tokens from Azure AD.
+* **User-assigned**: A managed identity as a standalone Azure resource. For User-assigned managed identities, the identity is managed separately from the resources that use it.
+
+Regardless of the type of identity chosen a managed identity is a service principal of a special type that may only be used with Azure resources. When the managed identity is deleted, the corresponding service principal is automatically removed.
+
+```terraform
+resource "azurerm_user_assigned_identity" "example" {
+  for_each            = toset(["user-identity1", "user-identity2"])
+  resource_group_name = "rg-shared-westeurope-01"
+  location            = "westeurope"
+  name                = each.key
+}
+
+module "storage" {
+  source  = "azurenoops/overlays-storage-account/azurerm"
+  version = "x.x.x"
+
+  # .... omitted
+
+  # Configure managed identities to access Azure Storage (Optional)
+  # Possible types are `SystemAssigned`, `UserAssigned` and `SystemAssigned, UserAssigned`.
+  managed_identity_type = "UserAssigned"
+  managed_identity_ids  = [for k in azurerm_user_assigned_identity.example : k.id]
+
+# .... omitted for bravity
+
+}
+```
+
+## Recommended naming and tagging conventions
+
+Applying tags to your Azure resources, resource groups, and subscriptions to logically organize them into a taxonomy. Each tag consists of a name and a value pair. For example, you can apply the name `Environment` and the value `Production` to all the resources in production.
+For recommendations on how to implement a tagging strategy, see Resource naming and tagging decision guide.
+
+> [!IMPORTANT]
+> Tag names are case-insensitive for operations. A tag with a tag name, regardless of the casing, is updated or retrieved. However, the resource provider might keep the casing you provide for the tag name. You'll see that casing in cost reports. **Tag values are case-sensitive.**
+
+An effective naming convention assembles resource names by using important resource information as parts of a resource's name. For example, using these [recommended naming conventions](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging#example-names), a public IP resource for a production SharePoint workload is named like this: `pip-sharepoint-prod-westus-001`.
+
+## Optional Features
+
+Storage Account Overlay has optional features that can be enabled by setting parameters on the deployment.
+
+## Create resource group
+
+By default, this module will create a resource group and the name of the resource group to be given in an argument `resource_group_name` located in `variables.naming.tf`. If you want to use an existing resource group, specify the existing resource group name, and set the argument to `create_resource_group = false`.
+
+> **Note:** *If you are using an existing resource group, then this module uses the same resource group location to create all resources in this module.*
+
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
