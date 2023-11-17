@@ -102,7 +102,7 @@ module "mod_storage" {
   ]
 
   # Adding TAG's to your Azure resources (Required)
-  # ProjectName and Env are already declared above, to use them here, create a varible. 
+  # ProjectName and Env are already declared above, to use them here, create a variable. 
   tags = {
     ProjectName  = "demo-internal"
     Env          = "dev"

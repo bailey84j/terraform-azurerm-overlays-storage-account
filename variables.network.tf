@@ -6,7 +6,7 @@
 ############################
 
 variable "network_rules" {
-  description = "Network rules restricing access to the storage account."
+  description = "Network rules restricting access to the storage account."
   type        = object({ default_firewall_action = string, bypass = list(string), ip_rules = list(string), subnet_ids = list(string) })
   default     = null
 }

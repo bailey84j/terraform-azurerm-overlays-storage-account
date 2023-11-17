@@ -18,10 +18,10 @@ module "storage_account" {
 
   # Tags
   # Adding TAG's to your Azure resources (Required)
-  # Org Name and Env are already declared above, to use them here, create a varible. 
+  # Org Name and Env are already declared above, to use them here, create a variable. 
   add_tags = merge({}, {
     Example     = "basic"
-    Organizaion = "AzureNoOps"
+    Organization = "AzureNoOps"
     Environment = "dev"
     Workload    = "storage"
   }) # Tags to be applied to all resources
