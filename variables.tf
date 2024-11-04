@@ -103,6 +103,12 @@ variable "https_traffic_only_enabled" {
   default     = true
 }
 
+variable "public_network_access_enabled" {
+  description = "Whether the public network access is enabled? Defaults to true."
+  type        = bool
+  default     = true
+}
+
 variable "min_tls_version" {
   description = "The minimum supported TLS version for the Storage Account. Possible values are `TLS1_0`, `TLS1_1`, and `TLS1_2`. "
   type        = string
